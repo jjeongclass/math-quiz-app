@@ -13,29 +13,42 @@ questions = [
     ("3 x 3", "9")
 ]
 
-# 1️⃣ 문제를 session_state에 저장
+# 세션 상태 초기화
 if "current_question" not in st.session_state:
     st.session_state.current_question = random.choice(questions)
 if "answered" not in st.session_state:
     st.session_state.answered = False
+if "input_key" not in st.session_state:
+    st.session_state.input_key = 0  # 입력창 초기화를 위한 키
+if "correct_total" not in st.session_state:
+    st.session_state.correct_total = 0
+    st.session_state.total_questions = 0
 
+# 현재 문제
 q, a = st.session_state.current_question
 
-# 2️⃣ 사용자 입력
-user = st.text_input(f"{q} = ", key="answer")
+# 사용자 입력
+user = st.text_input(f"{q} = ", key=f"answer_{st.session_state.input_key}")
 
-# 3️⃣ 제출 버튼 → 정답 확인
+# 제출 버튼
 if st.button("제출"):
     if user:
         st.session_state.answered = True
+        st.session_state.total_questions += 1
+
         if user.strip() == a:
             st.success("✅ 정답입니다!")
+            st.session_state.correct_total += 1
         else:
             st.error(f"❌ 틀렸어요! 정답은 {a}입니다.")
 
-# 4️⃣ 다음 문제 버튼
+# 다음 문제 버튼
 if st.session_state.answered:
     if st.button("다음 문제"):
         st.session_state.current_question = random.choice(questions)
         st.session_state.answered = False
-        st.session_state.answer = ""  # 입력값 초기화
+        st.session_state.input_key += 1  # 입력 필드 초기화
+
+# 정답률 표시
+if st.session_state.total_questions > 0:
+    st.caption(f"📊 지금까지 {st.session_state.correct_total} / {st.session_state.total_questions} 문제 정답")
